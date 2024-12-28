@@ -41,6 +41,14 @@ monero_add_library(blockchain_db
   ${blockchain_db_sources}
   ${blockchain_db_headers}
   ${blockchain_db_private_headers})
+
+find_library(STDCPP_FS_LIBRARY stdc++fs)
+if(STDCPP_FS_LIBRARY)
+    list(APPEND EXTRA_LIBRARIES ${STDCPP_FS_LIBRARY})
+elseif(UNIX AND (NOT APPLE) AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    list(APPEND EXTRA_LIBRARIES stdc++fs)
+endif()
+
 target_link_libraries(blockchain_db
   PUBLIC
     common

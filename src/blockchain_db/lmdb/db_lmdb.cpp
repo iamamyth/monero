@@ -32,6 +32,7 @@
 #include <boost/circular_buffer.hpp>
 #include <memory>  // std::unique_ptr
 #include <cstring>  // memcpy
+#include <filesystem>
 
 #include "string_tools.h"
 #include "file_io_utils.h"
@@ -4536,12 +4537,11 @@ bool BlockchainLMDB::is_read_only() const
 
 uint64_t BlockchainLMDB::get_database_size() const
 {
-  uint64_t size = 0;
-  boost::filesystem::path datafile(m_folder);
-  datafile /= CRYPTONOTE_BLOCKCHAINDATA_FILENAME;
-  if (!epee::file_io_utils::get_file_size(datafile.string(), size))
-    size = 0;
-  return size;
+  std::filesystem::path datafile(m_folder);
+  datafile /= std::filesystem::path(CRYPTONOTE_BLOCKCHAINDATA_FILENAME);
+  std::error_code ec{};
+  const std::uintmax_t size = std::filesystem::file_size(datafile, ec);
+  return (ec ? 0 : static_cast<uint64_t>(size));
 }
 
 void BlockchainLMDB::fixup()
