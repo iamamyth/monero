@@ -140,10 +140,10 @@ namespace hw {
             return D;
         }
 
-        std::vector<crypto::public_key>  device_default::get_subaddress_spend_public_keys(const cryptonote::account_keys &keys, uint32_t account, uint32_t begin, uint32_t end) {
+        crypto::public_key_vector  device_default::get_subaddress_spend_public_keys(const cryptonote::account_keys &keys, uint32_t account, uint32_t begin, uint32_t end) {
             CHECK_AND_ASSERT_THROW_MES(begin <= end, "begin > end");
 
-            std::vector<crypto::public_key> pkeys;
+            crypto::public_key_vector pkeys;
             pkeys.reserve(end - begin);
             cryptonote::subaddress_index index = {account, begin};
 
@@ -268,7 +268,7 @@ namespace hw {
             return true;
         }
 
-        bool device_default::conceal_derivation(crypto::key_derivation &derivation, const crypto::public_key &tx_pub_key, const std::vector<crypto::public_key> &additional_tx_pub_keys, const crypto::key_derivation &main_derivation, const std::vector<crypto::key_derivation> &additional_derivations){
+        bool device_default::conceal_derivation(crypto::key_derivation &derivation, const crypto::public_key &tx_pub_key, const crypto::public_key_vector &additional_tx_pub_keys, const crypto::key_derivation &main_derivation, const std::vector<crypto::key_derivation> &additional_derivations){
             return true;
         }
 
@@ -294,8 +294,8 @@ namespace hw {
         bool device_default::generate_output_ephemeral_keys(const size_t tx_version,
                                                             const cryptonote::account_keys &sender_account_keys, const crypto::public_key &txkey_pub,  const crypto::secret_key &tx_key,
                                                             const cryptonote::tx_destination_entry &dst_entr, const boost::optional<cryptonote::account_public_address> &change_addr, const size_t output_index,
-                                                            const bool &need_additional_txkeys, const std::vector<crypto::secret_key> &additional_tx_keys,
-                                                            std::vector<crypto::public_key> &additional_tx_public_keys,
+                                                            const bool &need_additional_txkeys, const crypto::secret_key_vector &additional_tx_keys,
+                                                            crypto::public_key_vector &additional_tx_public_keys,
                                                             std::vector<rct::key> &amount_keys,  crypto::public_key &out_eph_public_key,
                                                             const bool use_view_tags, crypto::view_tag &view_tag) {
 

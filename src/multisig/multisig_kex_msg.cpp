@@ -63,7 +63,7 @@ namespace multisig
   //----------------------------------------------------------------------------------------------------------------------
   multisig_kex_msg::multisig_kex_msg(const std::uint32_t round,
     const crypto::secret_key &signing_privkey,
-    std::vector<crypto::public_key> msg_pubkeys,
+    crypto::public_key_vector msg_pubkeys,
     const crypto::secret_key &msg_privkey) :
       m_kex_round{round}
   {

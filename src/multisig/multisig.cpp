@@ -87,7 +87,7 @@ namespace multisig
     const std::unordered_map<crypto::public_key, cryptonote::subaddress_index> &subaddresses,
     const crypto::public_key &out_key,
     const crypto::public_key &tx_public_key,
-    const std::vector<crypto::public_key> &additional_tx_public_keys,
+    const crypto::public_key_vector &additional_tx_public_keys,
     std::size_t real_output_index,
     const std::vector<crypto::key_image> &pkis,
     crypto::key_image &ki)

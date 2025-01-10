@@ -4379,7 +4379,7 @@ bool simple_wallet::init(const boost::program_options::variables_map& vm)
       // parsing N/N
       if(multisig_m == multisig_n)
       {
-        std::vector<crypto::secret_key> multisig_secret_spendkeys(multisig_n);
+        crypto::secret_key_vector multisig_secret_spendkeys(multisig_n);
         epee::wipeable_string spendkey_string;
         cryptonote::blobdata spendkey_data;
         // get N secret spend keys from user
@@ -7869,7 +7869,7 @@ bool simple_wallet::submit_transfer(const std::vector<std::string> &args_)
   return true;
 }
 //----------------------------------------------------------------------------------------------------
-std::string get_tx_key_stream(crypto::secret_key tx_key, std::vector<crypto::secret_key> additional_tx_keys)
+std::string get_tx_key_stream(crypto::secret_key tx_key, crypto::secret_key_vector additional_tx_keys)
 {
   ostringstream oss;
   oss << epee::string_tools::pod_to_hex(unwrap(unwrap(tx_key)));
@@ -7904,7 +7904,7 @@ bool simple_wallet::get_tx_key(const std::vector<std::string> &args_)
   SCOPED_WALLET_UNLOCK();
 
   crypto::secret_key tx_key;
-  std::vector<crypto::secret_key> additional_tx_keys;
+  crypto::secret_key_vector additional_tx_keys;
 
   bool found_tx_key = m_wallet->get_tx_key(txid, tx_key, additional_tx_keys);
   if (found_tx_key)
@@ -7955,7 +7955,7 @@ bool simple_wallet::set_tx_key(const std::vector<std::string> &args_)
   }
 
   crypto::secret_key tx_key;
-  std::vector<crypto::secret_key> additional_tx_keys;
+  crypto::secret_key_vector additional_tx_keys;
   try
   {
     if (!epee::string_tools::hex_to_pod(local_args[1].substr(0, 64), tx_key))
@@ -8065,7 +8065,7 @@ bool simple_wallet::check_tx_key(const std::vector<std::string> &args_)
   }
 
   crypto::secret_key tx_key;
-  std::vector<crypto::secret_key> additional_tx_keys;
+  crypto::secret_key_vector additional_tx_keys;
   if(!epee::string_tools::hex_to_pod(local_args[1].substr(0, 64), tx_key))
   {
     fail_msg_writer() << tr("failed to parse tx key");
@@ -8802,7 +8802,7 @@ bool simple_wallet::export_transfers(const std::vector<std::string>& args_)
     }
 
     crypto::secret_key tx_key;
-    std::vector<crypto::secret_key> additional_tx_keys;
+    crypto::secret_key_vector additional_tx_keys;
     bool found_tx_key = m_wallet->get_tx_key(transfer.hash, tx_key, additional_tx_keys);
     std::string key_string;
     if (export_keys && found_tx_key)

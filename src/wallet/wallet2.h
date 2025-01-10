@@ -407,7 +407,7 @@ private:
         uint8_t flags;
       } m_flags;
       uint64_t m_amount;
-      std::vector<crypto::public_key> m_additional_tx_keys;
+      crypto::public_key_vector m_additional_tx_keys;
       uint32_t m_subaddr_index_major;
       uint32_t m_subaddr_index_minor;
 
@@ -646,7 +646,7 @@ private:
       std::vector<size_t> selected_transfers;
       std::string key_images;
       crypto::secret_key tx_key;
-      std::vector<crypto::secret_key> additional_tx_keys;
+      crypto::secret_key_vector additional_tx_keys;
       std::vector<cryptonote::tx_destination_entry> dests;
       std::vector<multisig_sig> multisig_sigs;
       crypto::secret_key multisig_tx_key_entropy;
@@ -1116,7 +1116,7 @@ private:
     cryptonote::account_public_address get_address() const { return get_subaddress({0,0}); }
     boost::optional<cryptonote::subaddress_index> get_subaddress_index(const cryptonote::account_public_address& address) const;
     crypto::public_key get_subaddress_spend_public_key(const cryptonote::subaddress_index& index) const;
-    std::vector<crypto::public_key> get_subaddress_spend_public_keys(uint32_t account, uint32_t begin, uint32_t end) const;
+    crypto::public_key_vector get_subaddress_spend_public_keys(uint32_t account, uint32_t begin, uint32_t end) const;
     std::string get_subaddress_as_str(const cryptonote::subaddress_index& index) const;
     std::string get_address_as_str() const { return get_subaddress_as_str({0, 0}); }
     std::string get_integrated_address_as_str(const crypto::hash8& payment_id) const;
@@ -1488,15 +1488,15 @@ private:
     bool is_mismatched_daemon_version_allowed() const { return m_allow_mismatched_daemon_version; }
     void allow_mismatched_daemon_version(bool allow_mismatch) { m_allow_mismatched_daemon_version = allow_mismatch; }
 
-    bool get_tx_key_cached(const crypto::hash &txid, crypto::secret_key &tx_key, std::vector<crypto::secret_key> &additional_tx_keys) const;
-    void set_tx_key(const crypto::hash &txid, const crypto::secret_key &tx_key, const std::vector<crypto::secret_key> &additional_tx_keys, const boost::optional<cryptonote::account_public_address> &single_destination_subaddress = boost::none);
-    bool get_tx_key(const crypto::hash &txid, crypto::secret_key &tx_key, std::vector<crypto::secret_key> &additional_tx_keys);
-    void check_tx_key(const crypto::hash &txid, const crypto::secret_key &tx_key, const std::vector<crypto::secret_key> &additional_tx_keys, const cryptonote::account_public_address &address, uint64_t &received, bool &in_pool, uint64_t &confirmations);
+    bool get_tx_key_cached(const crypto::hash &txid, crypto::secret_key &tx_key, crypto::secret_key_vector &additional_tx_keys) const;
+    void set_tx_key(const crypto::hash &txid, const crypto::secret_key &tx_key, const crypto::secret_key_vector &additional_tx_keys, const boost::optional<cryptonote::account_public_address> &single_destination_subaddress = boost::none);
+    bool get_tx_key(const crypto::hash &txid, crypto::secret_key &tx_key, crypto::secret_key_vector &additional_tx_keys);
+    void check_tx_key(const crypto::hash &txid, const crypto::secret_key &tx_key, const crypto::secret_key_vector &additional_tx_keys, const cryptonote::account_public_address &address, uint64_t &received, bool &in_pool, uint64_t &confirmations);
     void check_tx_key_helper(const crypto::hash &txid, const crypto::key_derivation &derivation, const std::vector<crypto::key_derivation> &additional_derivations, const cryptonote::account_public_address &address, uint64_t &received, bool &in_pool, uint64_t &confirmations);
     void check_tx_key_helper(const cryptonote::transaction &tx, const crypto::key_derivation &derivation, const std::vector<crypto::key_derivation> &additional_derivations, const cryptonote::account_public_address &address, uint64_t &received) const;
     bool is_out_to_acc(const cryptonote::account_public_address &address, const crypto::public_key& out_key, const crypto::key_derivation &derivation, const std::vector<crypto::key_derivation> &additional_derivations, const size_t output_index, const boost::optional<crypto::view_tag> &view_tag_opt, crypto::key_derivation &found_derivation) const;
     std::string get_tx_proof(const crypto::hash &txid, const cryptonote::account_public_address &address, bool is_subaddress, const std::string &message);
-    std::string get_tx_proof(const cryptonote::transaction &tx, const crypto::secret_key &tx_key, const std::vector<crypto::secret_key> &additional_tx_keys, const cryptonote::account_public_address &address, bool is_subaddress, const std::string &message) const;
+    std::string get_tx_proof(const cryptonote::transaction &tx, const crypto::secret_key &tx_key, const crypto::secret_key_vector &additional_tx_keys, const cryptonote::account_public_address &address, bool is_subaddress, const std::string &message) const;
     bool check_tx_proof(const crypto::hash &txid, const cryptonote::account_public_address &address, bool is_subaddress, const std::string &message, const std::string &sig_str, uint64_t &received, bool &in_pool, uint64_t &confirmations);
     bool check_tx_proof(const cryptonote::transaction &tx, const cryptonote::account_public_address &address, bool is_subaddress, const std::string &message, const std::string &sig_str, uint64_t &received) const;
 
@@ -1919,7 +1919,7 @@ private:
     std::unordered_multimap<crypto::hash, pool_payment_details> m_unconfirmed_payments;
     std::unordered_map<crypto::hash, crypto::secret_key> m_tx_keys;
     cryptonote::checkpoints m_checkpoints;
-    std::unordered_map<crypto::hash, std::vector<crypto::secret_key>> m_additional_tx_keys;
+    std::unordered_map<crypto::hash, crypto::secret_key_vector> m_additional_tx_keys;
 
     transfer_container m_transfers;
     payment_container m_payments;
@@ -1951,10 +1951,10 @@ private:
     bool m_watch_only; /*!< no spend key */
     bool m_multisig; /*!< if > 1 spend secret key will not match spend public key */
     uint32_t m_multisig_threshold;
-    std::vector<crypto::public_key> m_multisig_signers;
+    crypto::public_key_vector m_multisig_signers;
     //in case of general M/N multisig wallet we should perform N - M + 1 key exchange rounds and remember how many rounds are passed.
     uint32_t m_multisig_rounds_passed;
-    std::vector<crypto::public_key> m_multisig_derivations;
+    crypto::public_key_vector m_multisig_derivations;
     bool m_always_confirm_transfers;
     bool m_print_ring_members;
     bool m_store_tx_info; /*!< request txkey to be returned in RPC, and store in the wallet cache file */

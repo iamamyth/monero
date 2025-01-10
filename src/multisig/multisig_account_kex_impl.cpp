@@ -111,7 +111,7 @@ namespace multisig
   * outparam: common_privkey_out - result
   */
   //----------------------------------------------------------------------------------------------------------------------
-  static void make_multisig_common_privkey(std::vector<crypto::secret_key> participant_base_common_privkeys,
+  static void make_multisig_common_privkey(crypto::secret_key_vector participant_base_common_privkeys,
     crypto::secret_key &common_privkey_out)
   {
     // sort the privkeys for consistency
@@ -147,7 +147,7 @@ namespace multisig
   * return: aggregation coefficient
   */
   //----------------------------------------------------------------------------------------------------------------------
-  static rct::key compute_multisig_aggregation_coefficient(const std::vector<crypto::public_key> &sorted_keys,
+  static rct::key compute_multisig_aggregation_coefficient(const crypto::public_key_vector &sorted_keys,
     const crypto::public_key &aggregation_key)
   {
     CHECK_AND_ASSERT_THROW_MES(std::is_sorted(sorted_keys.begin(), sorted_keys.end()),
@@ -186,8 +186,8 @@ namespace multisig
   * return: final multisig public spend key for the account
   */
   //----------------------------------------------------------------------------------------------------------------------
-  static crypto::public_key generate_multisig_aggregate_key(std::vector<crypto::public_key> final_keys,
-    std::vector<crypto::secret_key> &privkeys_inout)
+  static crypto::public_key generate_multisig_aggregate_key(crypto::public_key_vector final_keys,
+    crypto::secret_key_vector &privkeys_inout)
   {
     // collect all public keys that will go into the spend key (these don't need to be memsafe)
     final_keys.reserve(final_keys.size() + privkeys_inout.size());
@@ -324,7 +324,7 @@ namespace multisig
   */
   //----------------------------------------------------------------------------------------------------------------------
   static std::uint32_t multisig_kex_msgs_sanitize_pubkeys(const std::vector<multisig_kex_msg> &expanded_msgs,
-    const std::vector<crypto::public_key> &exclude_pubkeys,
+    const crypto::public_key_vector &exclude_pubkeys,
     multisig_keyset_map_memsafe_t &sanitized_pubkeys_out)
   {
     // all messages should have the same round (redundant sanity check)
@@ -416,9 +416,9 @@ namespace multisig
   static multisig_keyset_map_memsafe_t evaluate_multisig_kex_round_msgs(
     const crypto::public_key &base_pubkey,
     const std::uint32_t expected_round,
-    const std::vector<crypto::public_key> &signers,
+    const crypto::public_key_vector &signers,
     const std::vector<multisig_kex_msg> &expanded_msgs,
-    const std::vector<crypto::public_key> &exclude_pubkeys,
+    const crypto::public_key_vector &exclude_pubkeys,
     const bool incomplete_signer_set)
   {
     // exclude_pubkeys should all be unique
@@ -554,12 +554,12 @@ namespace multisig
   static multisig_keyset_map_memsafe_t evaluate_multisig_post_kex_round_msgs(
     const crypto::public_key &base_pubkey,
     const std::uint32_t expected_round,
-    const std::vector<crypto::public_key> &signers,
+    const crypto::public_key_vector &signers,
     const std::vector<multisig_kex_msg> &expanded_msgs,
     const bool incomplete_signer_set)
   {
     // sanitize input messages
-    const std::vector<crypto::public_key> dummy;
+    const crypto::public_key_vector dummy;
     multisig_keyset_map_memsafe_t pubkey_origins_map;  //map: [pubkey : [origins]]
     const std::uint32_t round = multisig_kex_msgs_sanitize_pubkeys(expanded_msgs, dummy, pubkey_origins_map);
     CHECK_AND_ASSERT_THROW_MES(round == expected_round,
@@ -631,9 +631,9 @@ namespace multisig
     const crypto::public_key &base_pubkey,
     const std::uint32_t current_round,
     const std::uint32_t threshold,
-    const std::vector<crypto::public_key> &signers,
+    const crypto::public_key_vector &signers,
     const std::vector<multisig_kex_msg> &expanded_msgs,
-    const std::vector<crypto::public_key> &exclude_pubkeys,
+    const crypto::public_key_vector &exclude_pubkeys,
     const bool incomplete_signer_set,
     multisig_keyset_map_memsafe_t &keys_to_origins_map_out)
   {
@@ -684,10 +684,10 @@ namespace multisig
   //----------------------------------------------------------------------------------------------------------------------
   // multisig_account: INTERNAL
   //----------------------------------------------------------------------------------------------------------------------
-  std::vector<crypto::public_key> multisig_account::get_kex_exclude_pubkeys() const
+  crypto::public_key_vector multisig_account::get_kex_exclude_pubkeys() const
   {
     // exclude all keys the local account recommends
-    std::vector<crypto::public_key> exclude_pubkeys;
+    crypto::public_key_vector exclude_pubkeys;
 
     if (m_kex_rounds_complete == 0)
     {
@@ -720,7 +720,7 @@ namespace multisig
     // collect participants' base common privkey shares
     // note: duplicate privkeys are acceptable, and duplicates due to duplicate signers
     //       will be blocked by duplicate-signer errors after this function is called
-    std::vector<crypto::secret_key> participant_base_common_privkeys;
+    crypto::secret_key_vector participant_base_common_privkeys;
     participant_base_common_privkeys.reserve(expanded_msgs.size() + 1);
 
     // add local ancillary base privkey
@@ -753,7 +753,7 @@ namespace multisig
   void multisig_account::finalize_kex_update(const std::uint32_t kex_rounds_required,
     multisig_keyset_map_memsafe_t result_keys_to_origins_map)
   {
-    std::vector<crypto::public_key> next_msg_keys;
+    crypto::public_key_vector next_msg_keys;
 
     // prepare for next round (or complete the multisig account fully)
     if (m_kex_rounds_complete == kex_rounds_required)
@@ -775,7 +775,7 @@ namespace multisig
       // finished with main kex rounds (have set of msgs to complete address)
 
       // when 'completing the final round', result keys are other signers' shares of the final key
-      std::vector<crypto::public_key> result_keys;
+      crypto::public_key_vector result_keys;
       result_keys.reserve(result_keys_to_origins_map.size());
 
       for (const auto &result_key_and_origins : result_keys_to_origins_map)
@@ -922,7 +922,7 @@ namespace multisig
     multisig_kex_make_round_keys(m_base_privkey, std::move(pubkey_origins_map), derivation_to_origins_map);
 
     // collect keys for booster message
-    std::vector<crypto::public_key> next_msg_keys;
+    crypto::public_key_vector next_msg_keys;
     next_msg_keys.reserve(derivation_to_origins_map.size());
 
     if (msgs_round + 1 == kex_rounds_required)

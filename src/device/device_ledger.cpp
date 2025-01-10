@@ -783,8 +783,8 @@ namespace hw {
         return D;
     }
 
-    std::vector<crypto::public_key>  device_ledger::get_subaddress_spend_public_keys(const cryptonote::account_keys &keys, uint32_t account, uint32_t begin, uint32_t end) {
-     std::vector<crypto::public_key> pkeys;
+    crypto::public_key_vector  device_ledger::get_subaddress_spend_public_keys(const cryptonote::account_keys &keys, uint32_t account, uint32_t begin, uint32_t end) {
+     crypto::public_key_vector pkeys;
      cryptonote::subaddress_index index = {account, begin};
      crypto::public_key D;
      for (uint32_t idx = begin; idx < end; ++idx) {
@@ -1102,7 +1102,7 @@ namespace hw {
       return r;
     }
 
-    bool device_ledger::conceal_derivation(crypto::key_derivation &derivation, const crypto::public_key &tx_pub_key, const std::vector<crypto::public_key> &additional_tx_pub_keys, const crypto::key_derivation &main_derivation, const std::vector<crypto::key_derivation> &additional_derivations) {
+    bool device_ledger::conceal_derivation(crypto::key_derivation &derivation, const crypto::public_key &tx_pub_key, const crypto::public_key_vector &additional_tx_pub_keys, const crypto::key_derivation &main_derivation, const std::vector<crypto::key_derivation> &additional_derivations) {
       const crypto::public_key *pkey=NULL;
       if (derivation == main_derivation) {        
         pkey = &tx_pub_key;
@@ -1581,8 +1581,8 @@ namespace hw {
 
     bool device_ledger::generate_output_ephemeral_keys(const size_t tx_version, const cryptonote::account_keys &sender_account_keys, const crypto::public_key &txkey_pub,  const crypto::secret_key &tx_key,
                                                        const cryptonote::tx_destination_entry &dst_entr, const boost::optional<cryptonote::account_public_address> &change_addr, const size_t output_index,
-                                                       const bool &need_additional_txkeys,  const std::vector<crypto::secret_key> &additional_tx_keys,
-                                                       std::vector<crypto::public_key> &additional_tx_public_keys,
+                                                       const bool &need_additional_txkeys,  const crypto::secret_key_vector &additional_tx_keys,
+                                                       crypto::public_key_vector &additional_tx_public_keys,
                                                        std::vector<rct::key> &amount_keys,
                                                        crypto::public_key &out_eph_public_key,
                                                        bool use_view_tags, crypto::view_tag &view_tag) {
@@ -1601,12 +1601,12 @@ namespace hw {
       const bool                               need_additional_txkeys_x       = need_additional_txkeys;
       const bool                               use_view_tags_x                = use_view_tags;
       
-      std::vector<crypto::secret_key>    additional_tx_keys_x;
+      crypto::secret_key_vector    additional_tx_keys_x;
       for (const auto &k: additional_tx_keys) {
         additional_tx_keys_x.push_back(hw::ledger::decrypt(k));
       }
       
-      std::vector<crypto::public_key>          additional_tx_public_keys_x;
+      crypto::public_key_vector          additional_tx_public_keys_x;
       std::vector<rct::key>                    amount_keys_x;
       crypto::public_key                       out_eph_public_key_x;
       crypto::view_tag                         view_tag_x;

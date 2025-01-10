@@ -2534,7 +2534,7 @@ namespace tools
     }
 
     crypto::secret_key tx_key;
-    std::vector<crypto::secret_key> additional_tx_keys;
+    crypto::secret_key_vector additional_tx_keys;
     if (!m_wallet->get_tx_key(txid, tx_key, additional_tx_keys))
     {
       er.code = WALLET_RPC_ERROR_CODE_NO_TXKEY;
@@ -2578,7 +2578,7 @@ namespace tools
       return false;
     }
     size_t offset = 64;
-    std::vector<crypto::secret_key> additional_tx_keys;
+    crypto::secret_key_vector additional_tx_keys;
     while (offset < tx_key_str.size())
     {
       additional_tx_keys.resize(additional_tx_keys.size() + 1);

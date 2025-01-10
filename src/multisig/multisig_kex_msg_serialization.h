@@ -62,7 +62,7 @@ namespace multisig
     // key exchange round this msg was produced for
     std::uint32_t kex_round;
     // pubkeys stored in msg
-    std::vector<crypto::public_key> msg_pubkeys;
+    crypto::public_key_vector msg_pubkeys;
     // pubkey used to sign this msg
     crypto::public_key signing_pubkey;
     // message signature

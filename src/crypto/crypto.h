@@ -76,14 +76,17 @@ namespace crypto {
   using secret_key = epee::mlocked<tools::scrubbed<ec_scalar>>;
 
   template <typename T>
-  using aligned_vector = std::vector<T, boost::alignment::aligned_allocator<T, 16>>;
+  using key_vector = std::vector<T, boost::alignment::aligned_allocator<T, 16>>;
+  using public_key_vector = key_vector<public_key>;
+  using secret_key_vector = key_vector<secret_key>;
+
   POD_CLASS public_keyV {
-    aligned_vector<public_key> keys;
+    public_key_vector keys;
     int rows;
   };
 
   POD_CLASS secret_keyV {
-    aligned_vector<secret_key> keys;
+    secret_key_vector keys;
     int rows;
   };
 

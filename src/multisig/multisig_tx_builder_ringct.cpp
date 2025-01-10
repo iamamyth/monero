@@ -140,7 +140,7 @@ static bool set_tx_extra(
   const cryptonote::tx_destination_entry& change,
   const crypto::secret_key& tx_secret_key,
   const crypto::public_key& tx_public_key,
-  const std::vector<crypto::public_key>& tx_aux_public_keys,
+  const crypto::public_key_vector& tx_aux_public_keys,
   const std::vector<std::uint8_t>& extra,
   cryptonote::transaction& tx
 )
@@ -270,7 +270,7 @@ static void make_tx_secret_key_seed(const crypto::secret_key& tx_secret_key_entr
 //----------------------------------------------------------------------------------------------------------------------
 static void make_tx_secret_keys(const crypto::secret_key& tx_secret_key_seed,
   const std::size_t num_tx_keys,
-  std::vector<crypto::secret_key>& tx_secret_keys)
+  crypto::secret_key_vector& tx_secret_keys)
 {
   // make tx secret keys as a hash chain of the seed
   // h1 = H_n(seed || H("domain separator"))
@@ -301,9 +301,9 @@ static void make_tx_secret_keys(const crypto::secret_key& tx_secret_key_seed,
 }
 //----------------------------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------------------------
-static bool collect_tx_secret_keys(const std::vector<crypto::secret_key>& tx_secret_keys,
+static bool collect_tx_secret_keys(const crypto::secret_key_vector& tx_secret_keys,
   crypto::secret_key& tx_secret_key,
-  std::vector<crypto::secret_key>& tx_aux_secret_keys)
+  crypto::secret_key_vector& tx_aux_secret_keys)
 {
   if (tx_secret_keys.size() == 0)
     return false;
@@ -328,7 +328,7 @@ static bool compute_keys_for_destinations(
   const bool reconstruction,
   const crypto::secret_key& tx_secret_key_seed,
   crypto::secret_key& tx_secret_key,
-  std::vector<crypto::secret_key>& tx_aux_secret_keys,
+  crypto::secret_key_vector& tx_aux_secret_keys,
   rct::keyV& output_public_keys,
   rct::keyV& output_amount_secret_keys,
   std::vector<crypto::view_tag>& view_tags,
@@ -373,12 +373,12 @@ static bool compute_keys_for_destinations(
   const std::size_t num_tx_keys = 1 + (need_tx_aux_keys ? num_destinations : 0);
 
   // make tx secret keys
-  std::vector<crypto::secret_key> all_tx_secret_keys;
+  crypto::secret_key_vector all_tx_secret_keys;
   make_tx_secret_keys(tx_secret_key_seed, num_tx_keys, all_tx_secret_keys);
 
   // split up tx secret keys
   crypto::secret_key tx_secret_key_temp;
-  std::vector<crypto::secret_key> tx_aux_secret_keys_temp;
+  crypto::secret_key_vector tx_aux_secret_keys_temp;
   if (not collect_tx_secret_keys(all_tx_secret_keys, tx_secret_key_temp, tx_aux_secret_keys_temp))
     return false;
 
@@ -418,7 +418,7 @@ static bool compute_keys_for_destinations(
   // additional tx pubkeys: R_t
   output_public_keys.resize(num_destinations);
   view_tags.resize(num_destinations);
-  std::vector<crypto::public_key> tx_aux_public_keys;
+  crypto::public_key_vector tx_aux_public_keys;
   crypto::public_key temp_output_public_key;
 
   for (std::size_t i = 0; i < num_destinations; ++i) {
@@ -829,7 +829,7 @@ bool tx_builder_ringct_t::init(
   const bool use_rct,
   const bool reconstruction,
   crypto::secret_key& tx_secret_key,
-  std::vector<crypto::secret_key>& tx_aux_secret_keys,
+  crypto::secret_key_vector& tx_aux_secret_keys,
   crypto::secret_key& tx_secret_key_entropy,
   cryptonote::transaction& unsigned_tx
 )

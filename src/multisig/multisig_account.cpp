@@ -56,7 +56,7 @@ namespace multisig
       m_multisig_pubkey{rct::rct2pk(rct::identity())},
       m_common_pubkey{rct::rct2pk(rct::identity())},
       m_kex_rounds_complete{0},
-      m_next_round_kex_message{multisig_kex_msg{1, base_privkey, std::vector<crypto::public_key>{}, base_common_privkey}.get_msg()}
+      m_next_round_kex_message{multisig_kex_msg{1, base_privkey, crypto::public_key_vector{}, base_common_privkey}.get_msg()}
   {
     CHECK_AND_ASSERT_THROW_MES(crypto::secret_key_to_public_key(m_base_privkey, m_base_pubkey),
       "Failed to derive public key");
@@ -65,10 +65,10 @@ namespace multisig
   // multisig_account: EXTERNAL
   //----------------------------------------------------------------------------------------------------------------------
   multisig_account::multisig_account(const std::uint32_t threshold,
-    std::vector<crypto::public_key> signers,
+    crypto::public_key_vector signers,
     const crypto::secret_key &base_privkey,
     const crypto::secret_key &base_common_privkey,
-    std::vector<crypto::secret_key> multisig_privkeys,
+    crypto::secret_key_vector multisig_privkeys,
     const crypto::secret_key &common_privkey,
     const crypto::public_key &multisig_pubkey,
     const crypto::public_key &common_pubkey,
@@ -101,7 +101,7 @@ namespace multisig
     {
       m_next_round_kex_message = multisig_kex_msg{kex_rounds_required + 1,
         m_base_privkey,
-        std::vector<crypto::public_key>{m_multisig_pubkey, m_common_pubkey}}.get_msg();
+        crypto::public_key_vector{m_multisig_pubkey, m_common_pubkey}}.get_msg();
     }
   }
   //----------------------------------------------------------------------------------------------------------------------
@@ -134,7 +134,7 @@ namespace multisig
   //----------------------------------------------------------------------------------------------------------------------
   // multisig_account: INTERNAL
   //----------------------------------------------------------------------------------------------------------------------
-  void multisig_account::set_multisig_config(const std::size_t threshold, std::vector<crypto::public_key> signers)
+  void multisig_account::set_multisig_config(const std::size_t threshold, crypto::public_key_vector signers)
   {
     // validate
     CHECK_AND_ASSERT_THROW_MES(threshold > 0 && threshold <= signers.size(), "multisig account: tried to set invalid threshold.");
@@ -167,7 +167,7 @@ namespace multisig
   // multisig_account: EXTERNAL
   //----------------------------------------------------------------------------------------------------------------------
   void multisig_account::initialize_kex(const std::uint32_t threshold,
-    std::vector<crypto::public_key> signers,
+    crypto::public_key_vector signers,
     const std::vector<multisig_kex_msg> &expanded_msgs_rnd1)
   {
     CHECK_AND_ASSERT_THROW_MES(!account_is_active(), "multisig account: tried to initialize kex, but already initialized");

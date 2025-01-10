@@ -111,10 +111,10 @@ namespace multisig
 
     // reconstruct from full account details (not recommended)
     multisig_account(const std::uint32_t threshold,
-      std::vector<crypto::public_key> signers,
+      crypto::public_key_vector signers,
       const crypto::secret_key &base_privkey,
       const crypto::secret_key &base_common_privkey,
-      std::vector<crypto::secret_key> multisig_privkeys,
+      crypto::secret_key_vector multisig_privkeys,
       const crypto::secret_key &common_privkey,
       const crypto::public_key &multisig_pubkey,
       const crypto::public_key &common_pubkey,
@@ -133,7 +133,7 @@ namespace multisig
     // get threshold
     std::uint32_t get_threshold() const { return m_threshold; }
     // get signers
-    const std::vector<crypto::public_key>& get_signers() const { return m_signers; }
+    const crypto::public_key_vector& get_signers() const { return m_signers; }
     // get base privkey
     const crypto::secret_key& get_base_privkey() const { return m_base_privkey; }
     // get base pubkey
@@ -141,7 +141,7 @@ namespace multisig
     // get base common privkey
     const crypto::secret_key& get_base_common_privkey() const { return m_base_common_privkey; }
     // get multisig privkeys
-    const std::vector<crypto::secret_key>& get_multisig_privkeys() const { return m_multisig_privkeys; }
+    const crypto::secret_key_vector& get_multisig_privkeys() const { return m_multisig_privkeys; }
     // get common privkey
     const crypto::secret_key& get_common_privkey() const { return m_common_privkey; }
     // get multisig pubkey
@@ -166,7 +166,7 @@ namespace multisig
   //account helpers
   private:
     // set the threshold (M) and signers (N)
-    void set_multisig_config(const std::size_t threshold, std::vector<crypto::public_key> signers);
+    void set_multisig_config(const std::size_t threshold, crypto::public_key_vector signers);
 
   //account mutators: key exchange to set up account
   public:
@@ -175,7 +175,7 @@ namespace multisig
     *    - Updates the account with a 'transactional' model. This account will only be mutated if the update succeeds.
     */
     void initialize_kex(const std::uint32_t threshold,
-      std::vector<crypto::public_key> signers,
+      crypto::public_key_vector signers,
       const std::vector<multisig_kex_msg> &expanded_msgs_rnd1);
     /**
     * brief: kex_update - Complete the 'in progress' kex round and set the kex message for the next round.
@@ -225,7 +225,7 @@ namespace multisig
     * return: keys held by the local account corresponding to the 'in-progress round'
     *    - If 'in-progress round' is the final round, these are the local account's shares of the final aggregate key.
     */
-    std::vector<crypto::public_key> get_kex_exclude_pubkeys() const;
+    crypto::public_key_vector get_kex_exclude_pubkeys() const;
     /**
     * brief: initialize_kex_update - initialize the multisig account for the first kex round
     * param: expanded_msgs - set of multisig kex messages to process
@@ -248,7 +248,7 @@ namespace multisig
     // [M] minimum number of co-signers to sign a message with the aggregate pubkey
     std::uint32_t m_threshold{0};
     // [N] base keys of all participants in the multisig (used to initiate key exchange, and as participant ids for msg signing)
-    std::vector<crypto::public_key> m_signers;
+    crypto::public_key_vector m_signers;
 
     /// local participant's personal keys
     // base keypair of the participant
@@ -261,7 +261,7 @@ namespace multisig
     /// core multisig account keys
     // the account's private key shares of the multisig address
     // TODO: also record which other signers have these privkeys, to enable aggregation signing (instead of round-robin)
-    std::vector<crypto::secret_key> m_multisig_privkeys;
+    crypto::secret_key_vector m_multisig_privkeys;
     // a privkey owned by all multisig participants (e.g. a cryptonote view key)
     crypto::secret_key m_common_privkey;
     // the multisig public key (e.g. a cryptonote spend key)

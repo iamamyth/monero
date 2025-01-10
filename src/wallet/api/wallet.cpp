@@ -1991,7 +1991,7 @@ std::string WalletImpl::getTxKey(const std::string &txid_str) const
     }
 
     crypto::secret_key tx_key;
-    std::vector<crypto::secret_key> additional_tx_keys;
+    crypto::secret_key_vector additional_tx_keys;
     try
     {
         clearStatus();
@@ -2027,7 +2027,7 @@ bool WalletImpl::checkTxKey(const std::string &txid_str, std::string tx_key_str,
     }
 
     crypto::secret_key tx_key;
-    std::vector<crypto::secret_key> additional_tx_keys;
+    crypto::secret_key_vector additional_tx_keys;
     if (!epee::string_tools::hex_to_pod(tx_key_str.substr(0, 64), tx_key))
     {
         setStatusError(tr("Failed to parse tx key"));

@@ -59,7 +59,7 @@ namespace multisig
     // construct from info
     multisig_kex_msg(const std::uint32_t round,
       const crypto::secret_key &signing_privkey,
-      std::vector<crypto::public_key> msg_pubkeys,
+      crypto::public_key_vector msg_pubkeys,
       const crypto::secret_key &msg_privkey = crypto::null_skey);
 
     // construct from string
@@ -78,7 +78,7 @@ namespace multisig
     // get kex round
     std::uint32_t get_round() const { return m_kex_round; }
     // get msg pubkeys
-    const std::vector<crypto::public_key>& get_msg_pubkeys() const { return m_msg_pubkeys; }
+    const crypto::public_key_vector& get_msg_pubkeys() const { return m_msg_pubkeys; }
     // get msg privkey
     const crypto::secret_key& get_msg_privkey() const { return m_msg_privkey; }
     // get msg signing pubkey
@@ -100,7 +100,7 @@ namespace multisig
     // key exchange round this msg was produced for
     std::uint32_t m_kex_round;
     // pubkeys stored in msg
-    std::vector<crypto::public_key> m_msg_pubkeys;
+    crypto::public_key_vector m_msg_pubkeys;
     // privkey stored in msg (if kex round 1)
     crypto::secret_key m_msg_privkey;
     // pubkey used to sign this msg

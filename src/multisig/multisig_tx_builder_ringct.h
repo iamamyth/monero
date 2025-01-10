@@ -80,7 +80,7 @@ public:
     const bool use_rct,
     const bool reconstruction,
     crypto::secret_key& tx_secret_key,
-    std::vector<crypto::secret_key>& tx_aux_secret_keys,
+    crypto::secret_key_vector& tx_aux_secret_keys,
     crypto::secret_key& tx_secret_key_entropy,
     cryptonote::transaction& unsigned_tx
   );
