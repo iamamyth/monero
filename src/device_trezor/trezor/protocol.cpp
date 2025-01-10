@@ -150,7 +150,7 @@ namespace ki {
   {
     for(auto & td : transfers){
       ::crypto::public_key tx_pub_key = wallet->get_tx_pub_key_from_received_outs(td);
-      const std::vector<::crypto::public_key> additional_tx_pub_keys = cryptonote::get_additional_tx_pub_keys_from_extra(td.m_tx);
+      const ::crypto::public_key_vector additional_tx_pub_keys = cryptonote::get_additional_tx_pub_keys_from_extra(td.m_tx);
 
       res.emplace_back();
       auto & cres = res.back();
@@ -1064,7 +1064,7 @@ namespace tx {
   }
 
   void get_tx_key_ack(
-      std::vector<::crypto::secret_key> & tx_keys,
+      ::crypto::secret_key_vector & tx_keys,
       const std::string & tx_prefix_hash,
       const ::crypto::secret_key & view_key_priv,
       std::shared_ptr<const messages::monero::MoneroGetTxKeyAck> ack

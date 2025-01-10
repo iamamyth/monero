@@ -148,7 +148,7 @@ namespace trezor {
        * TX key load with the Trezor
        */
       void get_tx_key(
-        std::vector<::crypto::secret_key> & tx_keys,
+        ::crypto::secret_key_vector & tx_keys,
         const ::hw::device_cold::tx_key_data_t & tx_aux_data,
         const ::crypto::secret_key & view_key_priv) override;
 

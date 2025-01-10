@@ -349,7 +349,7 @@ namespace tx {
       const hw::device_cold::tx_key_data_t & tx_data);
 
   void get_tx_key_ack(
-      std::vector<::crypto::secret_key> & tx_keys,
+      ::crypto::secret_key_vector & tx_keys,
       const std::string & tx_prefix_hash,
       const ::crypto::secret_key & view_key_priv,
       std::shared_ptr<const messages::monero::MoneroGetTxKeyAck> ack
