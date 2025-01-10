@@ -32,6 +32,7 @@
 
 #include <cstddef>
 #include <iostream>
+#include <boost/align/aligned_allocator.hpp>
 #include <boost/optional.hpp>
 #include <type_traits>
 #include <vector>
@@ -71,13 +72,15 @@ namespace crypto {
 
   using secret_key = epee::mlocked<tools::scrubbed<ec_scalar>>;
 
+  template <typename T>
+  using aligned_vector = std::vector<T, boost::alignment::aligned_allocator<T, 16>>;
   POD_CLASS public_keyV {
-    std::vector<public_key> keys;
+    aligned_vector<public_key> keys;
     int rows;
   };
 
   POD_CLASS secret_keyV {
-    std::vector<secret_key> keys;
+    aligned_vector<secret_key> keys;
     int rows;
   };
 
