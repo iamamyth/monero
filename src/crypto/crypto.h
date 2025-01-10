@@ -31,6 +31,7 @@
 #pragma once
 
 #include <cstddef>
+#include <cstdlib>
 #include <iostream>
 #include <boost/align/aligned_allocator.hpp>
 #include <boost/optional.hpp>
@@ -55,10 +56,12 @@ namespace crypto {
 #pragma pack(push, 1)
   POD_CLASS ec_point {
     char data[32];
+    static inline void* operator new(std::size_t size) { return std::aligned_alloc(16, size); }
   };
 
   POD_CLASS ec_scalar {
     char data[32];
+    static inline void* operator new(std::size_t size) { return std::aligned_alloc(16, size); }
   };
 
   POD_CLASS public_key: ec_point {
