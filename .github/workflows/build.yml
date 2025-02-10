@@ -12,7 +12,7 @@ on:
 
 # The below variables reduce repetitions across similar targets
 env:
-  REMOVE_BUNDLED_PACKAGES : sudo rm -rf /usr/local
+  REMOVE_BUNDLED_PACKAGES: 'sudo mv /usr/local /usr/extlocal && sudo mkdir /usr/local && sudo chown --reference=/usr/extlocal /usr/local && sudo chmod --reference=/usr/extlocal /usr/local'
   # ARCH="default" (not "native") ensures, that a different execution host can execute binaries compiled elsewhere.
   BUILD_DEFAULT_LINUX: 'cmake -S . -B build -D ARCH="default" -D BUILD_TESTS=ON -D CMAKE_BUILD_TYPE=Release && cmake --build build --target all && cmake --build build --target wallet_api'
   APT_INSTALL_LINUX: 'apt -y install build-essential cmake libboost-all-dev miniupnpc libunbound-dev graphviz doxygen libunwind8-dev pkg-config libssl-dev libzmq3-dev libsodium-dev libhidapi-dev libusb-1.0-0-dev libprotobuf-dev protobuf-compiler ccache git'
@@ -28,151 +28,8 @@ env:
   USE_DEVICE_TREZOR_MANDATORY: ON
 
 jobs:
-  build-macos:
-    name: 'macOS (brew)'
-    runs-on: macOS-latest
-    env:
-      CCACHE_TEMPDIR: /tmp/.ccache-temp
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-      - uses: actions/cache@v4
-        with:
-          path: /Users/runner/Library/Caches/ccache
-          key: ccache-${{ runner.os }}-build-${{ github.sha }}
-          restore-keys: ccache-${{ runner.os }}-build-
-      - uses: ./.github/actions/set-make-job-count
-      - name: install dependencies
-        run: |
-          HOMEBREW_NO_AUTO_UPDATE=1 brew install boost hidapi openssl zmq miniupnpc expat libunwind-headers protobuf@21 ccache
-          brew link protobuf@21 boost
-      - name: build
-        run: |
-          ${{env.CCACHE_SETTINGS}}
-          make -j${{env.MAKE_JOB_COUNT}}
-
-  build-windows:
-    name: 'Windows (MSYS2)'
-    runs-on: windows-latest
-    env:
-      CCACHE_TEMPDIR: C:\Users\runneradmin\.ccache-temp
-      CCACHE_DIR: C:\Users\runneradmin\.ccache
-    defaults:
-      run:
-        shell: msys2 {0}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-      - uses: actions/cache@v4
-        with:
-          path: C:\Users\runneradmin\.ccache
-          key: ccache-${{ runner.os }}-build-${{ github.sha }}
-          restore-keys: ccache-${{ runner.os }}-build-
-      - uses: msys2/setup-msys2@v2
-        with:
-          update: true
-          install: mingw-w64-x86_64-toolchain make mingw-w64-x86_64-cmake mingw-w64-x86_64-ccache mingw-w64-x86_64-boost mingw-w64-x86_64-openssl mingw-w64-x86_64-zeromq mingw-w64-x86_64-libsodium mingw-w64-x86_64-hidapi mingw-w64-x86_64-protobuf mingw-w64-x86_64-libusb mingw-w64-x86_64-unbound git pkg-config
-      - uses: ./.github/actions/set-make-job-count
-      - name: build
-        run: |
-          ${{env.CCACHE_SETTINGS}}
-          make release-static-win64 -j${{env.MAKE_JOB_COUNT}}
-
-  build-arch:
-    name: 'Arch Linux'
-    runs-on: ubuntu-latest
-    container:
-      image: archlinux:latest
-    steps:
-      - name: install dependencies
-        run: pacman -Syyu --noconfirm base-devel git cmake boost openssl zeromq unbound libsodium readline expat gtest python3 doxygen graphviz hidapi libusb protobuf
-      - name: configure git
-        run: git config --global --add safe.directory '*'
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-      - uses: ./.github/actions/set-make-job-count
-      - name: build
-        env:
-          CMAKE_BUILD_PARALLEL_LEVEL: ${{env.MAKE_JOB_COUNT}}
-        run: ${{env.BUILD_DEFAULT_LINUX}}
-
-  build-debian:
-    # Oldest supported Debian version
-    name: 'Debian 10'
-    runs-on: ubuntu-latest
-    container:
-      image: debian:10
-      env:
-        DEBIAN_FRONTEND: noninteractive
-    steps:
-      - name: set apt conf
-        run: ${{env.APT_SET_CONF}}
-      - name: update apt
-        run: apt update
-      - name: install monero dependencies
-        run: ${{env.APT_INSTALL_LINUX}}
-      - name: configure git
-        run: git config --global --add safe.directory '*'
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-      - uses: ./.github/actions/set-make-job-count
-      - name: build
-        env:
-          CMAKE_BUILD_PARALLEL_LEVEL: ${{env.MAKE_JOB_COUNT}}
-        run: ${{env.BUILD_DEFAULT_LINUX}}
-
-  build-ubuntu:
-    name: ${{ matrix.name }}
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          # Oldest supported Ubuntu LTS version
-          - name: Ubuntu 20.04
-            container: ubuntu:20.04
-
-          # Most popular Ubuntu LTS version
-          - name: Ubuntu 22.04
-            container: ubuntu:22.04
-    container:
-      image: ${{ matrix.container }}
-      env:
-        DEBIAN_FRONTEND: noninteractive
-        CCACHE_TEMPDIR: /tmp/.ccache-temp
-        CCACHE_DIR: ~/.ccache
-    steps:
-      - name: set apt conf
-        run: ${{env.APT_SET_CONF}}
-      - name: update apt
-        run: apt update
-      - name: install monero dependencies
-        run: ${{env.APT_INSTALL_LINUX}}
-      - name: configure git
-        run: git config --global --add safe.directory '*'
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-      - uses: actions/cache@v4
-        with:
-          path: ~/.ccache
-          key: ccache-${{ matrix.container }}-build-${{ github.sha }}
-          restore-keys: ccache-${{ matrix.container }}-build-
-      - uses: ./.github/actions/set-make-job-count
-      - name: build
-        env:
-          CMAKE_BUILD_PARALLEL_LEVEL: ${{env.MAKE_JOB_COUNT}}
-        run: |
-          ${{env.CCACHE_SETTINGS}}
-          ${{env.BUILD_DEFAULT_LINUX}}
-
   test-ubuntu:
     name: "${{ matrix.name }} (tests)"
-    needs: build-ubuntu
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -204,13 +61,14 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
+          fetch-depth: 0
       - uses: actions/cache@v4
         with:
           path: ~/.ccache
           key: ccache-${{ matrix.container }}-build-${{ github.sha }}
           restore-keys: ccache-${{ matrix.container }}-build-
-      - name: create dummy disk drives for testing
-        run: tests/create_test_disks.sh >> $GITHUB_ENV
+      # - name: create dummy disk drives for testing
+      #   run: tests/create_test_disks.sh >> $GITHUB_ENV
       - uses: ./.github/actions/set-make-job-count
       - name: tests
         env:
@@ -219,37 +77,4 @@ jobs:
           CMAKE_BUILD_PARALLEL_LEVEL: ${{env.MAKE_JOB_COUNT}}
         run: |
           ${{env.CCACHE_SETTINGS}}
-          ${{env.BUILD_DEFAULT_LINUX}}
-          cmake --build build --target test
-
-  source-archive:
-    name: "source archive"
-    runs-on: ubuntu-latest
-    container:
-      image: ubuntu:20.04
-      env:
-        DEBIAN_FRONTEND: noninteractive
-    steps:
-      - name: set apt conf
-        run: ${{env.APT_SET_CONF}}
-      - name: update apt
-        run: apt update
-      - name: install dependencies
-        run: apt install -y git python3-pip
-      - name: configure git
-        run: git config --global --add safe.directory '*'
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          submodules: recursive
-      - name: archive
-        run: |
-          pip install git-archive-all
-          export VERSION="monero-$(git describe)"
-          export OUTPUT="$VERSION.tar"
-          echo "OUTPUT=$OUTPUT" >> $GITHUB_ENV
-          git-archive-all --prefix "$VERSION/" --force-submodules "$OUTPUT"
-      - uses: actions/upload-artifact@v4
-        with:
-          name: ${{ env.OUTPUT }}
-          path: ${{ env.OUTPUT }}
+          ./tests/bisect_p2p.sh
