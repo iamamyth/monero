@@ -1249,10 +1249,14 @@ static bool endswith(const std::string &s, const std::string &ending)
     return s.size() >= ending.size() && s.substr(s.size() - ending.size()) == ending;
 }
 
-bool OS::termSupportsColor(void) {
-  std::string term = getEnvironmentVariable("TERM", "");
+bool OS::termSupportsColor(std::string& term) {
   return term == "xterm" || term == "screen" || term == "linux" || term == "cygwin"
         || endswith(term, "-color") || endswith(term, "-256color");
+}
+
+bool OS::termSupportsColor(void) {
+  std::string term = getEnvironmentVariable("TERM", "");
+  return termSupportsColor(term);
 }
 
 // DateTime

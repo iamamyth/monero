@@ -195,40 +195,18 @@ TEST(logging, multiline)
   cleanup();
 }
 
-class LoggingTermSupportsColorSuite : public testing::TestWithParam<std::tuple<std::string, bool>>
-{
-  protected:
-  static void SetUpTestSuite()
-  {
-    orig_term = std::getenv("TERM");
-  }
-
-  static void TearDownTestSuite()
-  {
-    setterm(orig_term == nullptr ? "" : origterm);
-  }
-
-  static void setterm(char *term)
-  {
-    termenv.assign("TERM=");
-    termenv.append(term);
-    putenv(const_cast<char *>(termenv.c_str()));
-  }
-
-  static char *orig_term;
-  static std::string termenv;
-};
+class LoggingTermSupportsColorSuite : public testing::TestWithParam<std::tuple<std::string, bool>> {};
 
 TEST_P(LoggingTermSupportsColorSuite, Detection)
 {
   std::tuple<std::string, bool> param = GetParam();
   auto term = std::get<0>(param);
   auto is_color = std::get<1>(param);
-  setterm(term);
-  ASSERT_EQ(el::base:utils::OS::termSupportsColor(), is_color);
+  ASSERT_EQ(el::base::utils::OS::termSupportsColor(term), is_color) << term;
 }
 INSTANTIATE_TEST_SUITE_P(
-    LoggingTermSupportsColorSuite, Detection,
+    TerminalStrings,
+    LoggingTermSupportsColorSuite,
     testing::Values(
         std::make_tuple("", false),
         // unrecognized terminals
@@ -249,9 +227,8 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple("basic-nocolor", false),
         std::make_tuple("basic-no256color", false),
         std::make_tuple("basic-color-unsupported", false),
-        std::make_tuple("basic-256color-unsupported", false),
-    )
-    testing::PrintToStringParamName());
+        std::make_tuple("basic-256color-unsupported", false)
+    ));
 
 // These operations might segfault
 TEST(logging, copy_ctor_segfault)
